@@ -1,4 +1,4 @@
-package br.com.screenmatch.series;
+package br.com.omdb.series;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
