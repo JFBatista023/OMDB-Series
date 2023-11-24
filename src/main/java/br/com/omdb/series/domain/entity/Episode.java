@@ -1,13 +1,43 @@
 package br.com.omdb.series.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record Episode(
-        @JsonAlias("Title") String title,
-        @JsonAlias("Episode") Integer number,
-        @JsonAlias("imdbRating") String rate,
-        @JsonAlias("Released") String releaseDate) {
+import br.com.omdb.series.dto.EpisodeData;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
+@Getter
+@Setter
+@ToString
+public class Episode {
+
+    private Integer season;
+
+    private String title;
+
+    private Integer number;
+
+    private Double rate;
+
+    private LocalDate releaseDate;
+
+    public Episode(Integer seasonNumber, EpisodeData episodeData) {
+        this.season = seasonNumber;
+        this.title = episodeData.title();
+        this.number = episodeData.number();
+
+        try {
+            this.rate = Double.valueOf(episodeData.rate());
+        } catch (NumberFormatException e) {
+            this.rate = 0.0;
+        }
+
+        try {
+            this.releaseDate = LocalDate.parse(episodeData.releaseDate());
+        } catch (DateTimeParseException e) {
+            this.releaseDate = null;
+        }
+    }
 }

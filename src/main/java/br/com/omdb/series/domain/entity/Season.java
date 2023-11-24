@@ -5,9 +5,11 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import br.com.omdb.series.dto.EpisodeData;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record Season(
         @JsonAlias("Season") Integer number,
-        @JsonAlias("Episodes") List<Episode> episodes) {
+        @JsonAlias("Episodes") List<EpisodeData> episodes) {
 
 }

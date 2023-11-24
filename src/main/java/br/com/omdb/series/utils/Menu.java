@@ -1,11 +1,19 @@
 package br.com.omdb.series.utils;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
+import org.springframework.cglib.core.Local;
+
+import br.com.omdb.series.domain.entity.Episode;
 import br.com.omdb.series.domain.entity.Season;
 import br.com.omdb.series.domain.entity.Series;
+import br.com.omdb.series.dto.EpisodeData;
 import br.com.omdb.series.service.APIConsumer;
 import br.com.omdb.series.service.DataConverter;
 
@@ -27,7 +35,6 @@ public class Menu {
 
         var json = apiConsumer.getData(ADDRESS + seriesName.replace(" ", "+") + APIKEY);
         Series series = converter.getData(json, Series.class);
-        System.out.println(series);
 
         List<Season> seasons = new ArrayList<>();
 
@@ -37,8 +44,34 @@ public class Menu {
             seasons.add(season);
         }
 
-        seasons.forEach(System.out::println);
+        List<Episode> episodes = seasons.stream()
+                .flatMap(season -> season.episodes().stream()
+                        .map(episodeData -> new Episode(season.number(), episodeData)))
 
-        seasons.forEach(season -> season.episodes().forEach(episode -> System.out.println(episode.title())));
+                .collect(Collectors.toList());
+
+        Optional<LocalDate> startDate = episodes.stream()
+                .map(Episode::getReleaseDate)
+                .min(LocalDate::compareTo);
+
+        Optional<LocalDate> endDate = episodes.stream()
+                .map(Episode::getReleaseDate)
+                .max(LocalDate::compareTo);
+
+        System.out.println("\nAbout:");
+        System.out.println(
+                series.title() + " started on " + startDate.get() + " and ended on " + endDate.get() + " with a "
+                        + series.rate() + " rating and " + series.totalSeasons() + " seasons with " + episodes.size()
+                        + " episodes in total.");
+
+        System.out.println("\nSeasons: ");
+        seasons.forEach(season -> System.out
+                .println("Season " + season.number() + ", Number of Episodes: " + season.episodes().size()));
+
+        System.out.println("\nTop 5 episodes:");
+        episodes.stream()
+                .sorted(Comparator.comparing(Episode::getRate).reversed())
+                .limit(5)
+                .forEach(System.out::println);
     }
 }
