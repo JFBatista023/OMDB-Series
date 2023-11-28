@@ -1,6 +1,7 @@
 package br.com.omdb.series.utils;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -8,12 +9,9 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Collectors;
 
-import org.springframework.cglib.core.Local;
-
 import br.com.omdb.series.domain.entity.Episode;
 import br.com.omdb.series.domain.entity.Season;
 import br.com.omdb.series.domain.entity.Series;
-import br.com.omdb.series.dto.EpisodeData;
 import br.com.omdb.series.service.APIConsumer;
 import br.com.omdb.series.service.DataConverter;
 
@@ -28,8 +26,10 @@ public class Menu {
     private final static String ADDRESS = "https://www.omdbapi.com/?t=";
 
     private final static String APIKEY = "&apikey=6585022c";
-
+    
     public static void display() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
         System.out.print("Enter a series name: ");
         var seriesName = scanner.nextLine();
 
@@ -47,7 +47,6 @@ public class Menu {
         List<Episode> episodes = seasons.stream()
                 .flatMap(season -> season.episodes().stream()
                         .map(episodeData -> new Episode(season.number(), episodeData)))
-
                 .collect(Collectors.toList());
 
         Optional<LocalDate> startDate = episodes.stream()
@@ -60,7 +59,7 @@ public class Menu {
 
         System.out.println("\nAbout:");
         System.out.println(
-                series.title() + " started on " + startDate.get() + " and ended on " + endDate.get() + " with a "
+                series.title() + " started on " + startDate.get().format(dateFormatter) + " and ended on " + endDate.get().format(dateFormatter) + " with a "
                         + series.rate() + " rating and " + series.totalSeasons() + " seasons with " + episodes.size()
                         + " episodes in total.");
 
@@ -72,6 +71,16 @@ public class Menu {
         episodes.stream()
                 .sorted(Comparator.comparing(Episode::getRate).reversed())
                 .limit(5)
-                .forEach(System.out::println);
+                .forEach(episode -> System.out.println("Episode: " + episode.getTitle() + ", Season: " + episode.getSeason() + ", Rating: " + episode.getRate() + ", Release date: " + episode.getReleaseDate().format(dateFormatter)));
+        
+        System.out.print("\nFrom which year would you like to see the episodes? ");
+        int year = scanner.nextInt();
+        scanner.nextLine();
+
+        LocalDate searchDate = LocalDate.of(year, 1, 1);
+
+        episodes.stream()
+                .filter(episode -> episode.getReleaseDate() != null && episode.getReleaseDate().isAfter(searchDate))
+                .forEach(episode -> System.out.println("Season: " + episode.getSeason() + ", Episode: " + episode.getTitle() + ", Release date: " + episode.getReleaseDate().format(dateFormatter)));
     }
 }
