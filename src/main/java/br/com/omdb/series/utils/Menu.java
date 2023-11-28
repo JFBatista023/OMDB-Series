@@ -82,5 +82,14 @@ public class Menu {
         episodes.stream()
                 .filter(episode -> episode.getReleaseDate() != null && episode.getReleaseDate().isAfter(searchDate))
                 .forEach(episode -> System.out.println("Season: " + episode.getSeason() + ", Episode: " + episode.getTitle() + ", Release date: " + episode.getReleaseDate().format(dateFormatter)));
+
+        System.out.print("\nWhat is the title of the episode you want to see information about? ");
+        String title = scanner.nextLine();
+        String titleCapitalized = title.substring(0, 1).toUpperCase() + title.substring(1);
+
+        episodes.stream()
+                .filter(episode -> episode.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .findFirst()
+                .ifPresentOrElse(episode -> System.out.println("The first episode containing the word " + "'" + titleCapitalized + "'" + " in the title is:\n" + "Season: " + episode.getSeason() + ", Episode: " + episode.getTitle() + ", Release date: " + episode.getReleaseDate().format(dateFormatter)), () -> System.out.println("No episodes containing the word " + "'" + titleCapitalized + "'" + " were found."));
     }
 }
